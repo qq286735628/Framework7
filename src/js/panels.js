@@ -3,7 +3,6 @@
 ======================================================*/
 app.allowPanelOpen = true;
 app.openPanel = function (panelPosition) {
-    // @panelPosition - string with panel position "left", "right"
     if (!app.allowPanelOpen) return false;
     var panel = $('.panel-' + panelPosition);
     if (panel.length === 0 || panel.hasClass('active')) return false;
@@ -75,15 +74,27 @@ app.initSwipePanels = function () {
     side = app.params.swipePanel;
 
     function handleTouchStart(e) {
-        if (!app.allowPanelOpen) return;
+        if (!app.allowPanelOpen || !app.params.swipePanel || isTouched) return;
         if ($('.modal-in, .photo-browser-in').length > 0) return;
+        if (!app.params.swipePanelCloseOpposite) {
+            if ($('.panel.active').length > 0 && !panel.hasClass('active')) return;
+        }
         touchesStart.x = e.type === 'touchstart' ? e.targetTouches[0].pageX : e.pageX;
         touchesStart.y = e.type === 'touchstart' ? e.targetTouches[0].pageY : e.pageY;
+        if (app.params.swipePanelCloseOpposite) {
+            if ($('.panel.active').length > 0) {
+                side = $('.panel.active').hasClass('panel-left') ? 'left' : 'right';
+            }
+            else {
+                side = app.params.swipePanel;
+            }
+        }
+        panel = $('.panel.panel-' + side);
         if (app.params.swipePanelActiveArea) {
-            if (app.params.swipePanel === 'left') {
+            if (side === 'left') {
                 if (touchesStart.x > app.params.swipePanelActiveArea) return;
             }
-            if (app.params.swipePanel === 'right') {
+            if (side === 'right') {
                 if (touchesStart.x < window.innerWidth - app.params.swipePanelActiveArea) return;
             }
         }
@@ -181,15 +192,15 @@ app.initSwipePanels = function () {
                 translate = panelWidth;
             }
         }
-            
         if (effect === 'reveal') {
             views.transform('translate3d(' + translate + 'px,0,0)').transition(0);
             panelOverlay.transform('translate3d(' + translate + 'px,0,0)');
+            app.pluginHook('swipePanelSetTransform', views[0], panel[0], Math.abs(translate / panelWidth));
         }
         else {
             panel.transform('translate3d(' + translate + 'px,0,0)').transition(0);
+            app.pluginHook('swipePanelSetTransform', views[0], panel[0], Math.abs(translate / panelWidth));
         }
-
     }
     function handleTouchEnd(e) {
         if (!isTouched || !isMoved) {
@@ -225,15 +236,13 @@ app.initSwipePanels = function () {
                 timeDiff < 300 && Math.abs(translate) >= 0 ||
                 timeDiff >= 300 && (Math.abs(translate) <= panelWidth / 2)
             ) {
-                action = 'swap';
+                if (side === 'left' && translate === panelWidth) action = 'reset';
+                else action = 'swap';
             }
             else {
                 action = 'reset';
             }
         }
-
-        panelOverlay.css({display: ''}).transform('');
-        panel.transition('').transform('');
         if (action === 'swap') {
             app.allowPanelOpen = true;
             if (opened) {
@@ -274,6 +283,8 @@ app.initSwipePanels = function () {
             views.transition('');
             views.transform('');
         }
+        panel.transition('').transform('');
+        panelOverlay.css({display: ''}).transform('');
     }
     $(document).on(app.touchEvents.start, handleTouchStart);
     $(document).on(app.touchEvents.move, handleTouchMove);

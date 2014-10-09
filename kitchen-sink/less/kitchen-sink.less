@@ -2,62 +2,10 @@
     background: #222;
     color: #dddddd;
 }
-.panel-left {
-    .content-block, .content-block-title {
-        color: #dddddd;
-    }
-    .list-block {
-        ul {
-            background: none;
-        }
-        ul,.item-inner {
-            border-color: rgba(255,255,255,0.1);
-        }
-        a {
-            color: inherit;
-        }
-        a:active {
-            background: #000;
-        }
-    }
-}
-.panel-right {
-    .content-block, .content-block-title, .list-panel-title {
-        color: #dddddd;
-    }
 
-    .navbar {
-        background: #000;
-        border-bottom: 1px solid #333;
-        .center {
-            color: #007aff;
-        }
-        a.link {
-            color: #fff;
-        }
-    }
-    .page {
-        background: #222;
-    }
-    .list-block {
-        ul {
-            background: none;
-        }
-        ul,.item-inner {
-            border-color: rgba(255,255,255,0.1);
-        }
-        a {
-            color: inherit;
-        }
-        a:active {
-            background: #000;
-        }
-    }
-}
 .popover {
-    width: 280px;
+    width: 240px;
 }
-
 
 .ks-grid {
     div[class*="col-"] {
@@ -66,12 +14,7 @@
         color: #000;
         border: 1px solid #ddd;
         padding: 5px;
-    }
-    .row {
         margin-bottom: 15px;
-    }
-    .row:last-child {
-        margin-bottom: 0;
     }
 }
 .ks-preloaders {
@@ -80,46 +23,6 @@
 .ks-preloader-big {
     width: 42px;
     height: 42px;
-}
-.page[data-page="messages"] {
-    .page-content {
-        padding-bottom: 44px;
-    }
-    .toolbar {
-        -webkit-transform: none;
-        -moz-transform: none;
-        -ms-transform: none;
-        -o-transform: none;
-        transform: none;
-    }
-    .ks-messages-input {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        -ms-appearance: none;
-        appearance: none;
-        -webkit-box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
-        border: 1px solid #c8c8cd;
-        background: #fff;
-        border-radius: 5px;
-        box-shadow: none;
-        display: block;
-        padding: 0px 8px 0px;
-        margin: 0;
-        width: 100%;
-        height: 28px;
-        color: #000;
-        font-size: 17px;
-        margin-right: 15px;
-        font-family: inherit;
-    }
-    .ks-send-message {
-        -webkit-flex-shrink: 0;
-        -moz-flex-shrink: 0;
-        -ms-flex-shrink: 0;
-        flex-shrink: 0;
-    }
 }
 .statusbar-overlay {
     background: #000;
@@ -132,15 +35,20 @@
 }
 // Demo tab bars
 .page[data-page="tabbar"], .page[data-page="tabbar-labels"] {
-    .toolbar {
+    .tabbar {
         -webkit-transform: none;
         -moz-transform: none;
         -ms-transform: none;
         -o-transform: none;
         transform: none;
     }
+}
+.page[data-page="tabbar-labels"] {
     .page-content {
-        padding-bottom: 44px;
+        padding-bottom: 50px;
+        @media all and (min-width:768px) {
+            padding-bottom: 56px;
+        }
     }
 }
 i.ks-tabbar-icon-1 {
@@ -263,4 +171,75 @@ i.ks-tabbar-icon-4 {
         left: 0;
     }
 }
-    
+// Custom Accordion
+.custom-accordion {
+    padding-left: 0;
+    padding-right: 0;
+    .accordion-item-toggle {
+        padding: 0px 15px;
+        height: 44px;
+        line-height: 44px;
+        font-size: 17px;
+        color:#000;
+        border-bottom: 1px solid rgba(0,0,0,0.15);
+        cursor: pointer;
+        &:active {
+            background: rgba(0,0,0,0.15);
+        }
+        span {
+            display: inline-block;
+            margin-left: 15px;
+            html[dir="rtl"] & {
+                margin-left: 0;
+                margin-right: 15px;
+            }
+        }
+    }
+    .accordion-item:last-child .accordion-item-toggle {
+        border-bottom: none;
+    }
+    .icon-ks-plus, .icon-ks-minus {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border: 1px solid #000;
+        border-radius: 100%;
+        line-height: 20px;
+        text-align: center;
+    }
+    .icon-ks-minus {
+        display: none;
+    }
+    .accordion-item-expanded {
+        .icon-ks-minus {
+            display: inline-block;
+        }
+        .icon-ks-plus {
+            display: none;
+        }
+    }
+    .accordion-item-content {
+        padding: 0px 15px;
+    }
+}
+
+.ks-layout-theme {
+    height: 44px;
+    border: 1px solid #aaa;
+    cursor: pointer;
+    &.ks-layout-default {
+        background: #efeff4;
+    }
+    &.ks-layout-dark {
+        background: #222426;
+    }
+    &.ks-layout-white {
+        background: #fff;
+    }
+}
+.ks-color-theme {
+    height: 44px;
+    border: 1px solid #aaa;
+    cursor: pointer;
+    margin-bottom: 10px;
+}

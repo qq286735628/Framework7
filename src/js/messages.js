@@ -7,18 +7,10 @@ app.initMessages = function (pageContainer) {
     if (messages.length === 0) return;
     var pageContent = page.find('.page-content');
     if (!messages.hasClass('new-messages-first')) pageContent[0].scrollTop = messages.height() - pageContent.height();
-    app.updateMessagesAngles(messages);
+    if (messages.hasClass('messages-auto-layout')) app.updateMessagesLayout(messages);
 };
 app.addMessage = function (props) {
     props = props || {};
-    /*
-    {
-        text : 'Message text',
-        day : 'Mon',
-        time : '14:42',
-        type : 'sent' // or 'received'
-    }
-    */
     props.type = props.type || 'sent';
     if (!props.text || props.length === 0) return false;
     var messagesContent = $('.messages-content');
@@ -29,28 +21,67 @@ app.addMessage = function (props) {
     if (props.day) {
         html += '<div class="messages-date">' + props.day + (props.time ? ',' : '') + (props.time ? ' <span>' + props.time + '</span>' : '') + '</div>';
     }
-    var isPic = props.text.indexOf('<img') >= 0;
-    var messageClass = 'message' + ' message-' + props.type + (isPic ? ' message-pic' : '') + ' message-appear';
-    html += '<div class="' + messageClass + '">' + props.text + '</div>';
+    var isPic = props.text.indexOf('<img') >= 0 ? 'message-pic' : '';
+    var withAvatar = props.avatar ? 'message-with-avatar' : '';
+    var messageClass = 'message' + ' message-' + props.type + ' ' + isPic  + ' ' + withAvatar + ' message-appear';
+    html += '<div class="' + messageClass + '">' +
+                (props.name ? '<div class="message-name">' + props.name + '</div>' : '') +
+                '<div class="message-text">' + props.text + '</div>' +
+                (props.avatar ? '<div class="message-avatar" style="background-image:url(' + props.avatar + ')"></div>' : '') +
+            '</div>';
     if (newOnTop) messages.prepend(html);
     else messages.append(html);
-    app.updateMessagesAngles(messages);
+    if (messages.hasClass('messages-auto-layout')) app.updateMessagesLayout(messages);
     app.scrollMessagesContainer(messagesContent);
 };
-app.updateMessagesAngles = function (messages) {
+app.updateMessagesLayout = function (messages) {
+    messages.find('.message').each(function () {
+        var message = $(this);
+        if (message.find('.message-text img').length > 0) message.addClass('message-pic');
+        if (message.find('.message-avatar').length > 0) message.addClass('message-with-avatar');
+    });
     messages.find('.message-sent').each(function () {
         var message = $(this);
-        if (!message.next().hasClass('message-sent')) {
-            message.addClass('message-last');
+        var next = message.next('.message-sent');
+        var prev = message.prev('.message-sent');
+        if (next.length === 0) {
+            message.addClass('message-last message-with-tail');
         }
-        else message.removeClass('message-last');
+        else message.removeClass('message-last message-with-tail');
+
+        if (prev.length === 0) {
+            message.addClass('message-first');
+        }
+        else message.removeClass('message-first');
+        // Search for changed names
+        if (prev.length > 0 && prev.find('.message-name').length > 0 && message.find('.message-name').length > 0) {
+            if (prev.find('.message-name').text() !== message.find('.message-name').text()) {
+                prev.addClass('message-last message-with-tail');
+                message.addClass('message-first');
+            }
+        }
     });
     messages.find('.message-received').each(function () {
         var message = $(this);
-        if (!message.next().hasClass('message-received')) {
-            message.addClass('message-last');
+        var next = message.next('.message-received');
+        var prev = message.prev('.message-received');
+        if (next.length === 0) {
+            message.addClass('message-last message-with-tail');
         }
-        else message.removeClass('message-last');
+        else message.removeClass('message-last message-with-tail');
+
+        if (prev.length === 0) {
+            message.addClass('message-first');
+        }
+        else message.removeClass('message-first');
+
+        // Search for changed names
+        if (prev.length > 0 && prev.find('.message-name').length > 0 && message.find('.message-name').length > 0) {
+            if (prev.find('.message-name').text() !== message.find('.message-name').text()) {
+                prev.addClass('message-last message-with-tail');
+                message.addClass('message-first');
+            }
+        }
     });
 };
 app.scrollMessagesContainer = function (messagesContent) {
@@ -61,19 +92,5 @@ app.scrollMessagesContainer = function (messagesContent) {
     var currentScroll = messagesContent[0].scrollTop;
     var newScroll = newOnTop ? 0 : messages.height() - messagesContent.height();
     if (newScroll === currentScroll) return;
-    var step = (newScroll - currentScroll) / 12;
-    function animScroll() {
-        if (messagesContent[0].scrollTop > newScroll && newOnTop) {
-            messagesContent[0].scrollTop = messagesContent[0].scrollTop + Math.floor(step);
-            app._animFrame(animScroll);
-        }
-        else if (messagesContent[0].scrollTop < newScroll && !newOnTop) {
-            messagesContent[0].scrollTop = messagesContent[0].scrollTop + Math.floor(step);
-            app._animFrame(animScroll);
-        }
-        else {
-            messagesContent[0].scrollTop = newScroll;
-        }
-    }
-    app._animFrame(animScroll);
+    messagesContent.scrollTop(newScroll, 300);
 };

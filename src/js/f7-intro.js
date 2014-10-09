@@ -7,26 +7,31 @@ window.Framework7 = function (params) {
     // App
     var app = this;
 
-    // Anim Frame
-    app._animFrame = function (callback) {
-        if (window.requestAnimationFrame) return window.requestAnimationFrame(callback);
-        else if (window.webkitRequestAnimationFrame) return window.webkitRequestAnimationFrame(callback);
-        else if (window.mozRequestAnimationFrame) return window.mozRequestAnimationFrame(callback);
-        else {
-            return window.setTimeout(callback, 1000 / 60);
-        }
-    };
+    // Version
+    app.version = '0.9.6';
 
     // Default Parameters
     app.params = {
         cache: true,
         cacheIgnore: [],
+        cacheIgnoreGetParameters: false,
         cacheDuration: 1000 * 60 * 10, // Ten minutes 
         preloadPreviousPage: true,
+        uniqueHistory: false,
+        uniqueHistoryIgnoreGetParameters: false,
+        dynamicPageUrl: 'content-{{index}}',
+        router: true,
         // Push State
         pushState: false,
+        pushStateRoot: undefined,
+        pushStateNoAnimation: false,
+        pushStateSeparator: '#!/',
         // Fast clicks
-        fastClicks : true,
+        fastClicks: true,
+        fastClicksDistanceThreshold: 0,
+        // Active State
+        activeState: true,
+        activeStateElements: 'a, button, label, span',
         // Animate Nav Back Icon
         animateNavBackIcon: false,
         // Swipe Back
@@ -36,45 +41,61 @@ window.Framework7 = function (params) {
         swipeBackPageBoxShadow: true,
         // Ajax
         ajaxLinks: undefined, // or CSS selector
-        // Pull To Refresh
-        pullToRefresh: true,
+        // External Links
+        externalLinks: ['external'], // array of CSS class selectors and/or rel attributes
         // Sortable
         sortable: true,
+        // Scroll toolbars
+        hideNavbarOnPageScroll: false,
+        hideToolbarOnPageScroll: false,
+        showBarsOnPageScrollEnd: true,
         // Swipeout
         swipeout: true,
         swipeoutNoFollow: false,
         // Smart Select Back link template
-        smartSelectBackTemplate: '<div class="left sliding"><a href="#" class="back link"><i class="icon icon-back-blue"></i><span>Back</span></a></div>',
+        smartSelectBackTemplate: '<div class="left sliding"><a href="#" class="back link"><i class="icon icon-back"></i><span>{{backText}}</span></a></div>',
+        smartSelectBackText: 'Back',
+        smartSelectInPopup: false,
+        smartSelectPopupCloseTemplate: '<div class="left"><a href="#" class="link close-popup"><i class="icon icon-back"></i><span>{{closeText}}</span></a></div>',
+        smartSelectPopupCloseText: 'Close',
+        smartSelectSearchbar: false,
+        smartSelectBackOnSelect: false,
+        // Searchbar
+        searchbarHideDividers: true,
+        searchbarHideGroups: true,
         // Panels
         swipePanel: false, // or 'left' or 'right'
         swipePanelActiveArea: 0,
+        swipePanelCloseOpposite: true,
         swipePanelNoFollow: false,
         swipePanelThreshold: 0,
         panelsCloseByOutside: true,
-        panelsVisibleZIndex: 6000,
         // Modals
-        modalTemplate: '<div class="modal {{noButtons}}">' +
-                            '<div class="modal-inner">' +
-                                '{{if title}}<div class="modal-title">{{title}}</div>{{/if title}}' +
-                                '<div class="modal-text">{{text}}</div>' +
-                                '{{afterText}}' +
-                            '</div>' +
-                            '<div class="modal-buttons">{{buttons}}</div>' +
-                        '</div>',
-        modalActionsTemplate: '<div class="actions-modal">{{buttons}}</div>',
         modalButtonOk: 'OK',
         modalButtonCancel: 'Cancel',
+        modalUsernamePlaceholder: 'Username',
+        modalPasswordPlaceholder: 'Password',
         modalTitle: 'Framework7',
         modalCloseByOutside: false,
-        modalActionsCloseByOutside: true,
-        modalPopupCloseByOutside: true,
+        actionsCloseByOutside: true,
+        popupCloseByOutside: true,
         modalPreloaderTitle: 'Loading... ',
-        // Auto init
-        init: true,
         // Name space
         viewClass: 'view',
         viewMainClass: 'view-main',
         viewsClass: 'views',
+        // Notifications defaults
+        notificationCloseOnClick: false,
+        notificationCloseIcon: true,
+        // Animate Pages
+        animatePages: true,
+        // Template7
+        templates: {},
+        templatesData: {},
+        template7Pages: false,
+        precompileTemplates: false,
+        // Auto init
+        init: true,
     };
 
     // Extend defaults with parameters
@@ -82,8 +103,12 @@ window.Framework7 = function (params) {
         app.params[param] = params[param];
     }
 
-    // Expose DOM lib
-    app.$ = $;
+    // DOM lib
+    var $ = Dom7;
+
+    // Template7 lib
+    var t7 = Template7;
+    app._compiledTemplates = {};
 
     // Touch events
     app.touchEvents = {
@@ -94,4 +119,15 @@ window.Framework7 = function (params) {
 
     // Link to local storage
     app.ls = localStorage;
+
+    // RTL
+    app.rtl = $('body').css('direction') === 'rtl';
+    if (app.rtl) $('html').attr('dir', 'rtl');
+
+    // Overwrite statusbar overlay
+    if (typeof app.params.statusbarOverlay !== 'undefined') {
+        if (app.params.statusbarOverlay) $('html').addClass('with-statusbar-overlay');
+        else $('html').removeClass('with-statusbar-overlay');
+    }
+
     

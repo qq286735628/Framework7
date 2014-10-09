@@ -4,38 +4,25 @@
 var _modalTemplateTempDiv = document.createElement('div');
 app.modal = function (params) {
     params = params || {};
-    /* @params example
-    {
-        title: 'Modal title',
-        text: 'Modal text',
-        afterText: 'Custom content after text',
-        buttons: [{
-            text:'Cancel',
-            bold: true,
-            onClick: function (){},
-            close:false
-        }]
-    }
-    */
-    var buttonsHTML = '';
-    if (params.buttons && params.buttons.length > 0) {
-        for (var i = 0; i < params.buttons.length; i++) {
-            buttonsHTML += '<span class="modal-button' + (params.buttons[i].bold ? ' modal-button-bold' : '') + '">' + params.buttons[i].text + '</span>';
-        }
-    }
-    var modalTemplate = app.params.modalTemplate;
-    if (!params.title) {
-        modalTemplate = modalTemplate.split('{{if title}}')[0] + modalTemplate.split('{{/if title}}')[1];
+    var modalHTML = '';
+    if (app.params.modalTemplate) {
+        if (!app._compiledTemplates.modal) app._compiledTemplates.modal = t7.compile(app.params.modalTemplate);
+        modalHTML = app._compiledTemplates.modal(params);
     }
     else {
-        modalTemplate = modalTemplate.replace(/{{if\ title}}/g, '').replace(/{{\/if\ title}}/g, '');
+        var buttonsHTML = '';
+        if (params.buttons && params.buttons.length > 0) {
+            for (var i = 0; i < params.buttons.length; i++) {
+                buttonsHTML += '<span class="modal-button' + (params.buttons[i].bold ? ' modal-button-bold' : '') + '">' + params.buttons[i].text + '</span>';
+            }
+        }
+        var titleHTML = params.title ? '<div class="modal-title">' + params.title + '</div>' : '';
+        var textHTML = params.text ? '<div class="modal-text">' + params.text + '</div>' : '';
+        var afterTextHTML = params.afterText ? params.afterText : '';
+        var noButtons = !params.buttons || params.buttons.length === 0 ? 'modal-no-buttons' : '';
+        modalHTML = '<div class="modal ' + noButtons + '"><div class="modal-inner">' + (titleHTML + textHTML + afterTextHTML) + '</div><div class="modal-buttons">' + buttonsHTML + '</div></div>';
     }
-    var modalHTML = modalTemplate
-                    .replace(/{{title}}/g, params.title || '')
-                    .replace(/{{text}}/g, params.text || '')
-                    .replace(/{{afterText}}/g, params.afterText || '')
-                    .replace(/{{buttons}}/g, buttonsHTML)
-                    .replace(/{{noButtons}}/g, !params.buttons || params.buttons.length === 0 ? 'modal-no-buttons' : '');
+    
     _modalTemplateTempDiv.innerHTML = modalHTML;
 
     var modal = $(_modalTemplateTempDiv).children();
@@ -47,6 +34,7 @@ app.modal = function (params) {
         $(el).on('click', function (e) {
             if (params.buttons[index].close !== false) app.closeModal(modal);
             if (params.buttons[index].onClick) params.buttons[index].onClick(modal, e);
+            if (params.onClick) params.onClick(modal, index);
         });
     });
     app.openModal(modal);
@@ -87,15 +75,73 @@ app.prompt = function (text, title, callbackOk, callbackCancel) {
     return app.modal({
         text: text || '',
         title: typeof title === 'undefined' ? app.params.modalTitle : title,
-        afterText: '<input type="text" class="modal-prompt-input">',
+        afterText: '<input type="text" class="modal-text-input">',
         buttons: [
-            {text: app.params.modalButtonCancel, onClick: function (modal) {
-                if (callbackCancel) callbackCancel($(modal).find('.modal-prompt-input').val());
-            }},
-            {text: app.params.modalButtonOk, bold: true, onClick: function (modal) {
-                if (callbackOk) callbackOk($(modal).find('.modal-prompt-input').val());
-            }}
-        ]
+            {
+                text: app.params.modalButtonCancel
+            },
+            {
+                text: app.params.modalButtonOk,
+                bold: true
+            }
+        ],
+        onClick: function (modal, index) {
+            if (index === 0 && callbackCancel) callbackCancel($(modal).find('.modal-text-input').val());
+            if (index === 1 && callbackOk) callbackOk($(modal).find('.modal-text-input').val());
+        }
+    });
+};
+app.modalLogin = function (text, title, callbackOk, callbackCancel) {
+    if (typeof title === 'function') {
+        callbackCancel = arguments[2];
+        callbackOk = arguments[1];
+        title = undefined;
+    }
+    return app.modal({
+        text: text || '',
+        title: typeof title === 'undefined' ? app.params.modalTitle : title,
+        afterText: '<input type="text" name="modal-username" placeholder="' + app.params.modalUsernamePlaceholder + '" class="modal-text-input modal-text-input-double"><input type="password" name="modal-password" placeholder="' + app.params.modalPasswordPlaceholder + '" class="modal-text-input modal-text-input-double">',
+        buttons: [
+            {
+                text: app.params.modalButtonCancel
+            },
+            {
+                text: app.params.modalButtonOk,
+                bold: true
+            }
+        ],
+        onClick: function (modal, index) {
+            var username = $(modal).find('.modal-text-input[name="modal-username"]').val();
+            var password = $(modal).find('.modal-text-input[name="modal-password"]').val();
+            if (index === 0 && callbackCancel) callbackCancel(username, password);
+            if (index === 1 && callbackOk) callbackOk(username, password);
+        }
+    });
+};
+app.modalPassword = function (text, title, callbackOk, callbackCancel) {
+    if (typeof title === 'function') {
+        callbackCancel = arguments[2];
+        callbackOk = arguments[1];
+        title = undefined;
+    }
+    return app.modal({
+        text: text || '',
+        title: typeof title === 'undefined' ? app.params.modalTitle : title,
+        afterText: '<input type="password" name="modal-password" placeholder="' + app.params.modalPasswordPlaceholder + '" class="modal-text-input">',
+        buttons: [
+            {
+                text: app.params.modalButtonCancel
+            },
+            {
+                text: app.params.modalButtonOk,
+                bold: true
+            }
+        ],
+        onClick: function (modal, index) {
+            var password = $(modal).find('.modal-text-input[name="modal-password"]').val();
+            if (index === 0 && callbackCancel) callbackCancel(password);
+            if (index === 1 && callbackOk) callbackOk(password);
+        }
     });
 };
 app.showPreloader = function (title) {
@@ -105,7 +151,7 @@ app.showPreloader = function (title) {
     });
 };
 app.hidePreloader = function () {
-    app.closeModal();
+    app.closeModal('.modal.modal-in');
 };
 app.showIndicator = function () {
     $('body').append('<div class="preloader-indicator-overlay"></div><div class="preloader-indicator-modal"><span class="preloader preloader-white"></span></div>');
@@ -114,75 +160,107 @@ app.hideIndicator = function () {
     $('.preloader-indicator-overlay, .preloader-indicator-modal').remove();
 };
 // Action Sheet
-app.actions = function (params) {
+app.actions = function (target, params) {
+    var toPopover = false, modal, groupSelector, buttonSelector;
+    if (arguments.length === 1) {
+        // Actions
+        params = target;
+    } 
+    else {
+        // Popover
+        if (app.device.ios) {
+            if (app.device.ipad) toPopover = true;
+        }
+        else {
+            if ($(window).width() >= 768) toPopover = true;
+        }
+    }
     params = params || [];
-    /*Example of @params
-    [
-        [
-            {
-                text: 'Button 1',
-                red: false,
-                bold: false,
-                onClick: function () { ... },
-                label: false // or true
-            },
-            {
-                text: '<a href="#" class="open-panel">Open panel</a>',
-                red: false,
-                bold: false,
-                onClick: function () { ... }  
-                label: false // or true
-            }
-            ... more buttons in this group
-        ],
-        ... more groups
-    ]
-    */
+    
     if (params.length > 0 && !$.isArray(params[0])) {
         params = [params];
     }
-
-    var actionsTemplate = app.params.modalActionsTemplate;
-    var buttonsHTML = '';
-    for (var i = 0; i < params.length; i++) {
-        for (var j = 0; j < params[i].length; j++) {
-            if (j === 0) buttonsHTML += '<div class="actions-modal-group">';
-            var button = params[i][j];
-            var buttonClass = button.label ? 'actions-modal-label' : 'actions-modal-button';
-            if (button.bold) buttonClass += ' actions-modal-button-bold';
-            if (button.red) buttonClass += ' actions-modal-button-red';
-            buttonsHTML += '<span class="' + buttonClass + '">' + button.text + '</span>';
-            if (j === params[i].length - 1) buttonsHTML += '</div>';
+    var modalHTML;
+    if (toPopover) {
+        var actionsPopoverTemplate = 
+            '<div class="popover actions-popover">' +
+              '<div class="popover-inner">' +
+                '{{#each this}}' +
+                '<div class="list-block">' +
+                  '<ul>' +
+                    '{{#each this}}' +
+                    '{{#if label}}' +
+                    '<li class="actions-popover-label {{#if color}}color-{{color}}{{/if}} {{#if bold}}actions-popover-bold{{/if}}">{{text}}</li>' +
+                    '{{else}}' +
+                    '<li><a href="#" class="item-link list-button {{#if color}}color-{{color}}{{/if}} {{#if bold}}actions-popover-bold{{/if}}">{{text}}</a></li>' +
+                    '{{/if}}' +
+                    '{{/each}}' +
+                  '</ul>' +
+                '</div>' +
+                '{{/each}}' +
+              '</div>' +
+            '</div>';
+        if (!app._compiledTemplates.actionsPopover) {
+            app._compiledTemplates.actionsPopover = t7.compile(actionsPopoverTemplate);
         }
+        var popoverHTML = app._compiledTemplates.actionsPopover(params);
+        modal = $(app.popover(popoverHTML, target, true));
+        groupSelector = '.list-block ul';
+        buttonSelector = '.list-button';
     }
-    var modalHTML = actionsTemplate.replace(/{{buttons}}/g, buttonsHTML);
-
-    _modalTemplateTempDiv.innerHTML = modalHTML;
-    var modal = $(_modalTemplateTempDiv).children();
-    $('body').append(modal[0]);
-
-    var groups = modal.find('.actions-modal-group');
+    else {
+        if (app.params.modalActionsTemplate) {
+            if (!app._compiledTemplates.actions) app._compiledTemplates.actions = t7.compile(app.params.modalActionsTemplate);
+            modalHTML = app._compiledTemplates.actions(params);
+        }
+        else {
+            var buttonsHTML = '';
+            for (var i = 0; i < params.length; i++) {
+                for (var j = 0; j < params[i].length; j++) {
+                    if (j === 0) buttonsHTML += '<div class="actions-modal-group">';
+                    var button = params[i][j];
+                    var buttonClass = button.label ? 'actions-modal-label' : 'actions-modal-button';
+                    if (button.bold) buttonClass += ' actions-modal-button-bold';
+                    if (button.color) buttonClass += ' color-' + button.color;
+                    buttonsHTML += '<span class="' + buttonClass + '">' + button.text + '</span>';
+                    if (j === params[i].length - 1) buttonsHTML += '</div>';
+                }
+            }
+            modalHTML = '<div class="actions-modal">' + buttonsHTML + '</div>';
+        }
+        _modalTemplateTempDiv.innerHTML = modalHTML;
+        modal = $(_modalTemplateTempDiv).children();
+        $('body').append(modal[0]);
+        groupSelector = '.actions-modal-group';
+        buttonSelector = '.actions-modal-button';
+    }
+    
+    var groups = modal.find(groupSelector);
     groups.each(function (index, el) {
         var groupIndex = index;
         $(el).children().each(function (index, el) {
             var buttonIndex = index;
             var buttonParams = params[groupIndex][buttonIndex];
-            if ($(el).hasClass('actions-modal-button')) {
-                $(el).on('click', function (e) {
+            var clickTarget;
+            if (!toPopover && $(el).is(buttonSelector)) clickTarget = $(el);
+            if (toPopover && $(el).find(buttonSelector).length > 0) clickTarget = $(el).find(buttonSelector);
+
+            if (clickTarget) {
+                clickTarget.on('click', function (e) {
                     if (buttonParams.close !== false) app.closeModal(modal);
                     if (buttonParams.onClick) buttonParams.onClick(modal, e);
                 });
             }
         });
     });
-    app.openModal(modal);
+    if (!toPopover) app.openModal(modal);
     return modal[0];
 };
 app.popover = function (modal, target, removeOnClose) {
     if (typeof removeOnClose === 'undefined') removeOnClose = true;
     if (typeof modal === 'string' && modal.indexOf('<') >= 0) {
         var _modal = document.createElement('div');
-        _modal.innerHTML = modal;
+        _modal.innerHTML = $.trim(modal);
         if (_modal.childNodes.length > 0) {
             modal = _modal.childNodes[0];
             if (removeOnClose) modal.classList.add('remove-on-close');
@@ -279,6 +357,10 @@ app.popover = function (modal, target, removeOnClose) {
     modal.on('close', function () {
         $(window).off('resize', sizePopover);
     });
+    
+    if (modal.find('.' + app.params.viewClass).length > 0) {
+        app.sizeNavbars(modal.find('.' + app.params.viewClass)[0]);
+    }
 
     app.openModal(modal);
     return modal[0];
@@ -287,7 +369,7 @@ app.popup = function (modal, removeOnClose) {
     if (typeof removeOnClose === 'undefined') removeOnClose = true;
     if (typeof modal === 'string' && modal.indexOf('<') >= 0) {
         var _modal = document.createElement('div');
-        _modal.innerHTML = modal;
+        _modal.innerHTML = $.trim(modal);
         if (_modal.childNodes.length > 0) {
             modal = _modal.childNodes[0];
             if (removeOnClose) modal.classList.add('remove-on-close');
@@ -304,17 +386,36 @@ app.popup = function (modal, removeOnClose) {
     app.openModal(modal);
     return modal[0];
 };
+app.loginScreen = function (modal) {
+    if (!modal) modal = '.login-screen';
+    modal = $(modal);
+    if (modal.length === 0) return false;
+    modal.show();
+    if (modal.find('.' + app.params.viewClass).length > 0) {
+        app.sizeNavbars(modal.find('.' + app.params.viewClass)[0]);
+    }
+    app.openModal(modal);
+    return modal[0];
+};
 app.openModal = function (modal) {
     modal = $(modal);
-    if ($('.modal-overlay').length === 0) {
-        var overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        $('body').append(overlay);
-    }
+
     var isPopover = modal.hasClass('popover');
     var isPopup = modal.hasClass('popup');
-    if (!isPopover && !isPopup) modal.css({marginTop: -modal.outerHeight() / 2 + 'px'});
-    
+    var isLoginScreen = modal.hasClass('login-screen');
+    if (!isPopover && !isPopup && !isLoginScreen) modal.css({marginTop: - Math.round(modal.outerHeight() / 2) + 'px'});
+
+    var overlay;
+    if (!isLoginScreen) {
+        if ($('.modal-overlay').length === 0 && !isPopup) {
+            $('body').append('<div class="modal-overlay"></div>');
+        }
+        if ($('.popup-overlay').length === 0 && isPopup) {
+            $('body').append('<div class="popup-overlay"></div>');
+        }
+        overlay = isPopup ? $('.popup-overlay') : $('.modal-overlay');
+    }
+
     //Make sure that styles are applied, trigger relayout;
     var clientLeft = modal[0].clientLeft;
 
@@ -322,7 +423,7 @@ app.openModal = function (modal) {
     modal.trigger('open');
 
     // Classes for transition in
-    $('.modal-overlay').addClass('modal-overlay-visible');
+    if (!isLoginScreen) overlay.addClass('modal-overlay-visible');
     modal.removeClass('modal-out').addClass('modal-in').transitionEnd(function (e) {
         if (modal.hasClass('modal-out')) modal.trigger('closed');
         else modal.trigger('opened');
@@ -331,23 +432,48 @@ app.openModal = function (modal) {
 };
 app.closeModal = function (modal) {
     modal = $(modal || '.modal-in');
-    $('.modal-overlay').removeClass('modal-overlay-visible');
-    modal.trigger('close');
+    if (typeof modal !== 'undefined' && modal.length === 0) {
+        return;
+    }
     var isPopover = modal.hasClass('popover');
     var isPopup = modal.hasClass('popup');
+    var isLoginScreen = modal.hasClass('login-screen');
+
     var removeOnClose = modal.hasClass('remove-on-close');
+
+    var overlay = isPopup ? $('.popup-overlay') : $('.modal-overlay');
+    if (isPopup){
+        if (modal.length === $('.popup.modal-in').length) {
+            overlay.removeClass('modal-overlay-visible');    
+        }  
+    }
+    else {
+        overlay.removeClass('modal-overlay-visible');
+    }
+
+    modal.trigger('close');
+
     if (!isPopover) {
         modal.removeClass('modal-in').addClass('modal-out').transitionEnd(function (e) {
             if (modal.hasClass('modal-out')) modal.trigger('closed');
             else modal.trigger('opened');
-            if (!isPopup) modal.remove();
-            if (isPopup) modal.removeClass('modal-out').hide();
-            if (removeOnClose) modal.remove();
+            
+            if (isPopup || isLoginScreen) {
+                modal.removeClass('modal-out').hide();
+                if (removeOnClose && modal.length > 0) {
+                    modal.remove();
+                }
+            }
+            else {
+                modal.remove();
+            }
         });
     }
     else {
         modal.removeClass('modal-in modal-out').trigger('closed').hide();
-        if (removeOnClose) modal.remove();
+        if (removeOnClose) {
+            modal.remove();
+        }
     }
     return true;
 };

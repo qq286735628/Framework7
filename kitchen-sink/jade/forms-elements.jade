@@ -2,12 +2,12 @@
   .navbar-inner
     .left.sliding
       a(href="forms.html").back.link
-        i.icon.icon-back-blue 
+        i.icon.icon-back
         span Forms
     .center.sliding Form Elements
     .right
       a(href="#").link.open-panel.icon-only
-        i.icon.icon-bars-blue
+        i.icon.icon-bars
 .pages.navbar-through
   .page(data-page="form-elements")
     .page-content
@@ -72,6 +72,14 @@
                 .item-title.label Birth date
                 .item-input
                   input(type="date", placeholder="Birth day", value="2014-04-30")
+          li
+            .item-content
+              .item-media
+                i.icon.icon-form-calendar
+              .item-inner 
+                .item-title.label Date time
+                .item-input
+                  input(type="datetime-local", placeholder="Birth day")
           li
             .item-content
               .item-media

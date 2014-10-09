@@ -19,7 +19,7 @@ app.formDeleteData = function (formId) {
     // Delete form data from local storage also
     if (app.ls['f7form-' + formId]) {
         app.ls['f7form-' + formId] = '';
-        delete app.ls['f7form-' + formId];
+        app.ls.removeItem('f7form-' + formId);
     }
 };
 app.formGetData = function (formId) {
@@ -177,13 +177,13 @@ $(document).on('submit change', 'form.ajax-submit, form.ajax-submit-onchange', f
     if (method === 'POST') data = new FormData(form[0]);
     else data = $.serializeObject(app.formToJSON(form[0]));
 
-    $.ajax({
+    var xhr = $.ajax({
         method: method,
         url: url,
         contentType: contentType,
         data: data,
         success: function (data) {
-            form.trigger('submitted', {data: data});
+            form.trigger('submitted', {data: data, xhr: xhr});
         }
     });
 });

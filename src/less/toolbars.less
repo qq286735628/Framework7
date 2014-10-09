@@ -15,6 +15,9 @@
     .justify-content(space-between);
     .align-items(center);
 }
+.navbar-inner.cached {
+    display: none;
+}
 .navbar, .toolbar {
     height: 44px;
     width: 100%;
@@ -23,20 +26,21 @@
     position: relative;
     margin: 0;
     z-index: 500;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
     b {
         font-weight: 500;
     }
     a.link {
         line-height: 44px;
         height: 44px;
-        color: @navbarLinksColor;
         text-decoration: none;
         position: relative;
         .flexbox();
         .justify-content(flex-start);
         .align-items(center);
         .transition(300ms);
-        &:active{
+        html:not(.watch-active-state) &:active, &.active-state {
             opacity: 0.3;
             .transition(0ms);
         }
@@ -60,6 +64,9 @@
     top: 0;
     background: @navbarBg;
     border-bottom: 1px solid @navbarBorderColor;
+    html.retina.ios-gt-7 & {
+        border-bottom-width: 0.5px;
+    }
     .center {
         font-size: 17px;
         font-weight: 500;
@@ -90,6 +97,11 @@
     .right {
         margin-left: 10px;
     }
+    .right:first-child {
+        position: absolute;
+        right: 8px;
+        height: 100%;
+    }
 
 }
 .toolbar {
@@ -97,6 +109,9 @@
     bottom: 0;
     background: @toolbarBg;
     border-top: 1px solid @toolbarBorderColor;
+    html.retina.ios-gt-7 & {
+        border-top-width: 0.5px;
+    }
     a {
         .flex-shrink(1);
         position: relative;
@@ -116,6 +131,9 @@
     a.active {
         color: @tabbarActiveLinksColor;
     }
+    a.link {
+        line-height: 1.4;
+    }
     a.tab-link, a.link {
         height: 100%;
         width: 100%;
@@ -132,6 +150,9 @@
         -webkit-flex-direction: column;
         flex-direction: column;
     }
+    i.icon {
+        height: 30px;
+    }
 }
 .tabbar-labels {
     height: 50px;
@@ -140,10 +161,14 @@
         padding-bottom: 4px;
         height: 100%;
         .justify-content(space-between);
+        i + span {
+            margin: 0;
+        }
     }
     span.tabbar-label {
         line-height: 1;
         display: block;
+        margin: 0;
         letter-spacing: 0.01em;
         font-size: 10px;
         position: relative;
@@ -162,7 +187,7 @@
         }
     }
     .tabbar-labels {
-        height: 55px;
+        height: 56px;
         span.tabbar-label {
             font-size: 14px;
         }

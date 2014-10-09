@@ -15,6 +15,7 @@
         margin-left: -10px;
         margin-top: -10px;
         visibility: hidden;
+        
     }
     .pull-to-refresh-arrow {
         width: 13px;
@@ -34,8 +35,22 @@
     
 }
 .pull-to-refresh-content {
-    &.transitioning {
+    &.pull-to-refresh-no-navbar {
+        margin-top: -44px;
+        height: ~"-webkit-calc(100% + 44px)";
+        height: ~"-moz-calc(100% + 44px)";
+        height: ~"calc(100% + 44px)";
+        .pull-to-refresh-layer {
+            margin-top: 0;
+        }
+    }
+    &.transitioning, &.refreshing {
         .transition(400ms); 
+    }
+    &:not(.refreshing) {
+        .preloader {
+            .animation(none);
+        }
     }
     &.refreshing {
         .translate3d(0,44px,0);

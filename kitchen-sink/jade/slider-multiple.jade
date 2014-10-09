@@ -2,12 +2,12 @@
   .navbar-inner
     .left.sliding
       a(href="index.html").back.link
-        i.icon.icon-back-blue 
+        i.icon.icon-back
         span Back
     .center.sliding Multiple Sliders
     .right
       a(href="#").open-panel.link.icon-only
-        i.icon.icon-bars-blue
+        i.icon.icon-bars
 .pages.navbar-through
   .page(data-page="slider-multiple")
     .page-content
@@ -33,7 +33,7 @@
           - for (var i = 1; i < 11; i++)
             .slider-slide Slide #{i}
 
-      .content-block-title Vertical, 0px Between
+      .content-block-title Vertical, 10px Between
       .slider-container.slider-init.ks-carousel-slider(data-pagination=".slider-pagination-c4", data-spaceBetween="10", data-direction="vertical")
         .slider-pagination.slider-pagination-c4
         .slider-wrapper
